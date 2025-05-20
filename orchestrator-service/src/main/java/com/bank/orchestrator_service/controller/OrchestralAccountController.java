@@ -19,72 +19,49 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.bank.orchestrator_service.dto.AccountDTO;
+import com.bank.orchestrator_service.service.OrchestralAccountService;
 
 @RestController
 @RequestMapping("/orchestral/accounts")
 public class OrchestralAccountController {
-
+    
     @Autowired
-    private RestTemplate restTemplate;
-
-    private final String ACCOUNT_SERVICE_BASE_URL = "http://localhost:5050/accounts";
+    private OrchestralAccountService orchestralAccountService;
 
     // ✅ 1. Create account
     @PostMapping("/create")
     public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountDTO accountDTO) {
         accountDTO.setActionType("CREATE");
-        return restTemplate.postForEntity(ACCOUNT_SERVICE_BASE_URL + "/save", accountDTO, AccountDTO.class);
+        return orchestralAccountService.createAccount(accountDTO);
     }
 
     // ✅ 2. Update account
     @PutMapping("/update")
     public ResponseEntity<AccountDTO> updateAccount(@RequestBody AccountDTO accountDTO) {
-        accountDTO.setActionType("UPDATE");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<AccountDTO> request = new HttpEntity<>(accountDTO, headers);
-
-        ResponseEntity<AccountDTO> response = restTemplate.exchange(
-                ACCOUNT_SERVICE_BASE_URL + "/save",
-                HttpMethod.POST,
-                request,
-                AccountDTO.class
-        );
-
-        return ResponseEntity.ok(response.getBody());
+        
+        return orchestralAccountService.updateAccount(accountDTO);
+        
     }
 
     // ✅ 3. Delete account
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
-        AccountDTO dto = new AccountDTO();
-        dto.setActionType("DELETE");
-        dto.setId(id);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<AccountDTO> request = new HttpEntity<>(dto, headers);
-
-        restTemplate.postForEntity(ACCOUNT_SERVICE_BASE_URL + "/save", request, Void.class);
-        return ResponseEntity.ok().build();
+   
+        return orchestralAccountService.deleteAccount(id);
+        
     }
 
     // ✅ 4. Get account by ID
     @GetMapping("/{id}")
     public ResponseEntity<AccountDTO> getAccountByNumber(@PathVariable Long id) {
-        return restTemplate.getForEntity(
-                ACCOUNT_SERVICE_BASE_URL + "/" + id,
-                AccountDTO.class
-        );
+        return orchestralAccountService.getAccountByNumber(id);
     }
+    
 
     // ✅ 5. Get all accounts
     @GetMapping("/all")
     public ResponseEntity<List> getAllAccounts() {
-        return restTemplate.getForEntity(ACCOUNT_SERVICE_BASE_URL + "/all", List.class);
+        return orchestralAccountService.getAllAccounts();
     }
 }
 
